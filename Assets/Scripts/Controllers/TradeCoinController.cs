@@ -105,6 +105,8 @@ public class TradeCoinController : MonoBehaviour
             elapsedTime = 0;
             startPos = body.position;
             endPos = outsideAnchor.position;
+            
+            _playerController.GetAnimationBehaviour().UpdateAnimationFreeze(AnimationStates.IDLE);
         
             stackController.RemoveFromStack(body);
             body.SetParent(null);

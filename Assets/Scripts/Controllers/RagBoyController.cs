@@ -78,6 +78,8 @@ public class RagBoyController : MonoBehaviour
     
     private IEnumerator TimeToStack()
     {
+        LayerChanger.ChangeLayerRecursively(gameObject, 3);
+        
         hips.SetParent(null);
 
         List<Rigidbody> rigidBodies = new()
@@ -96,7 +98,6 @@ public class RagBoyController : MonoBehaviour
         hips.SetParent(visuals);
         
         player.GetComponent<PlayerController>().GetStackController().AddToStack(transform);
-        LayerChanger.ChangeLayerRecursively(gameObject, 3);
 
         yield return new WaitForSeconds(1);
         
