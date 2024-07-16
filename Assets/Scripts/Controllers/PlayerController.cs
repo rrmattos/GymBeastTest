@@ -11,12 +11,16 @@ public class PlayerController : MonoBehaviour
     
     [SerializeField] private Transform visuals;
     public Transform GetVisuals() => visuals;
+    
     private AnimationBehaviour animationBehaviour;
     public AnimationBehaviour GetAnimationBehaviour() => animationBehaviour;
+    
     private TouchController touchController;
     private StackController stackController;
+    public StackController GetStackController() => stackController;
     
     private PlayerController(){}
+    
     
     void Awake()
     {
@@ -54,10 +58,13 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter(Collider _other)
     {
-        if (_other.CompareTag("RagBoy") && !touchController.isMoveBlocked)
+        if (_other.TryGetComponent(out RagBoyController ragBoyController) && !touchController.isMoveBlocked)
         {
-            touchController.IsMoveBlocked(true);
-            Punch(_other);
+            if (ragBoyController.IsKnockedOut)
+            {
+                touchController.IsMoveBlocked(true);
+                Punch(_other);
+            }
         }
     }
 
@@ -72,40 +79,16 @@ public class PlayerController : MonoBehaviour
         });
         
         _other.transform.GetComponent<RagBoyController>().TakeKnockBack(transform.forward * 100);
-
-        StartCoroutine(TimeToStack(_other));
+        //Destroy(_other.GetComponent<Collider>());
+        
+        StartCoroutine(TimerPunch());
     }
 
-    private IEnumerator TimeToStack(Collider _other)
+    private IEnumerator TimerPunch()
     {
         AnimatorStateInfo stateInfo = animationBehaviour.GetAnimator().GetCurrentAnimatorStateInfo(0);
         yield return new WaitForSeconds(stateInfo.length * (stateInfo.speed * 0.1f));
-
-        //Transform ragBoySpine = _other.GetComponent<RagBoyController>().GetSpine();
-        Transform ragBoyHips = _other.GetComponent<RagBoyController>().GetHips();
-        ragBoyHips.SetParent(null);
         
-        List<Rigidbody> rigidBodies = _other.GetComponentsInChildren<Rigidbody>().Where(rb =>
-        {
-            string[] names = { "Hips", "Spine" };
-            return names.Any(name => rb.name.Contains(name));
-        }).ToList();
-
-        foreach (Rigidbody rb in rigidBodies)
-        {
-            rb.isKinematic = true;
-            rb.useGravity = false;
-        }
-
-        ragBoyHips.GetComponent<Rigidbody>().isKinematic = true;
-        _other.transform.position = ragBoyHips.position;
-        Debug.Log($"{_other.transform.position} - {ragBoyHips.position}");
-        ragBoyHips.SetParent(_other.transform);
-        
-        stackController.AddToStack(_other.transform);
-        LayerChanger.ChangeLayerRecursively(_other.gameObject, 3);
-        Destroy(_other.GetComponent<Collider>());;
-
         touchController.IsMoveBlocked(false);
     }
 }

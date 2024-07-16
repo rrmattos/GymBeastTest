@@ -8,6 +8,7 @@ TagManager:
   - PlayerHead
   - PlayerBody
   - PlayerFace
+  - RagBoyHips
   layers:
   - Default
   - TransparentFX

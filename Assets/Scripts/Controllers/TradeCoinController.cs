@@ -45,7 +45,6 @@ public class TradeCoinController : MonoBehaviour
             
             if (isPlayerGettinPosition) return;
             if (stackAnchor != null && stackAnchor.childCount == 0) return;
-            Debug.Log(stackAnchor.childCount);
             
             isPlayerGettinPosition = true;
 
@@ -117,16 +116,26 @@ public class TradeCoinController : MonoBehaviour
                 yield return null;
             }
         
-            body.position = endPos; 
+            body.position = endPos;
             LayerChanger.ChangeLayerRecursively(body.gameObject, 0);
-            //Rigidbody rb = body.GetComponent<Rigidbody>();
-            //rb.useGravity = true;
-            //rb.isKinematic = false;
+            List<Rigidbody> rigidBodies = body.GetComponentsInChildren<Rigidbody>().Where(rb =>
+            {
+                string[] names = { "Hips", "Spine" };
+                return names.Any(name => rb.name.Contains(name));
+            }).ToList();
 
+            foreach (Rigidbody rb in rigidBodies)
+            {
+                rb.isKinematic = false;
+                rb.useGravity = true;
+            }
+            
             audioSource.clip = coinAudio;
             audioSource.Play();
             totalCoins++;
             textCoin.text = $"x{totalCoins.ToString()}";
+            
+            //Destroy(body.GetComponent<RagBoyController>());
         }
 
         _playerController.GetAnimationBehaviour().GetAnimator().applyRootMotion = true;
@@ -137,7 +146,6 @@ public class TradeCoinController : MonoBehaviour
         doorSecurityAnimator.Play("Idle");
         _playerController.GetAnimationBehaviour().GetAnimator().applyRootMotion = false;
         
-        Debug.Log("cabou tempo");
         isPlayerGettinPosition = false;
         
         touchController.enabled = true;
