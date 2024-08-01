@@ -7,7 +7,7 @@ using UnityEngine;
 public class UIController : MonoBehaviour
 {
     public static event Action<TextMeshProUGUI> OnSetTextCoins;
-    
+
     [SerializeField] private CanvasGroup storeGroup;
     [SerializeField] private TextMeshProUGUI textCoin;
     [SerializeField] private TextMeshProUGUI textBtnHead;
@@ -28,8 +28,8 @@ public class UIController : MonoBehaviour
     private int bodyCounter = 0;
     private StackController stackController;
     private AudioSource audioSFX;
-    
-    private UIController(){}
+
+    private UIController() { }
 
     private void OnEnable()
     {
@@ -51,7 +51,7 @@ public class UIController : MonoBehaviour
             storeGroup.blocksRaycasts = true;
 
             textStackCapacity.text = $"{stackController.StackCapacity}";
-            
+
             UpdateAllSkinsState();
         }
         else
@@ -59,17 +59,17 @@ public class UIController : MonoBehaviour
             storeGroup.alpha = 0;
             storeGroup.interactable = false;
             storeGroup.blocksRaycasts = false;
-            
+
             ClearChildrensFromList(playerHead);
             ClearChildrensFromList(playerFace);
-            
+
             #region --- Equipa as skins marcadas como "EQUIPED" ---
 
             UpdateEquipedSkins(headSkins, playerHead);
             UpdateEquipedSkins(faceSkins, playerFace);
             UpdateEquipedSkins(bodySkins, playerBody);
-            
-            #endregion 
+
+            #endregion
             //
             // headCounter = 0;
             // faceCounter = 0;
@@ -82,7 +82,7 @@ public class UIController : MonoBehaviour
         if (headCounter + _direction < 0 || headCounter + _direction > headSkins.Count - 1) return;
 
         headCounter += _direction;
-        
+
         if (playerHead.childCount > 0) ClearChildrensFromList(playerHead);
 
         if (headSkins[headCounter] != null && headSkins[headCounter].SkinPrefab != null)
@@ -90,16 +90,16 @@ public class UIController : MonoBehaviour
             GameObject newSkin = Instantiate(headSkins[headCounter].SkinPrefab, playerHead);
             newSkin.layer = 6;
         }
-        
+
         UpdateSkinState(headSkins, headCounter, textBtnHead, 3);
     }
-    
+
     public void ChangeFaceSkin(int _direction)
     {
         if (faceCounter + _direction < 0 || faceCounter + _direction > faceSkins.Count - 1) return;
 
         faceCounter += _direction;
-        
+
         if (playerFace.childCount > 0) ClearChildrensFromList(playerFace);
 
         if (faceSkins[faceCounter] != null && faceSkins[faceCounter].SkinPrefab != null)
@@ -107,10 +107,10 @@ public class UIController : MonoBehaviour
             GameObject newSkin = Instantiate(faceSkins[faceCounter].SkinPrefab, playerFace);
             newSkin.layer = 6;
         }
-        
+
         UpdateSkinState(faceSkins, faceCounter, textBtnFace, 2);
     }
-    
+
     public void ChangeBodySkin(int _direction)
     {
         if (bodyCounter + _direction < 0 || bodyCounter + _direction > bodySkins.Count - 1) return;
@@ -122,20 +122,20 @@ public class UIController : MonoBehaviour
             SkinnedMeshRenderer skinnedMeshRenderer = playerBody.GetComponent<SkinnedMeshRenderer>();
             skinnedMeshRenderer.material = bodySkins[bodyCounter].SkinMaterial;
         }
-        
+
         UpdateSkinState(bodySkins, bodyCounter, textBtnBody, 5);
     }
-    
+
     public void IncreaseStackCapacity()
     {
         int currentCoins = Int32.Parse(textCoin.text.Replace("x", ""));
-                
+
         if (currentCoins < 5) return;
 
         stackController.StackCapacity++;
         textStackCapacity.text = stackController.StackCapacity.ToString();
         textCoin.text = $"x{currentCoins - 5}";
-        
+
         audioSFX.clip = coinSound;
         audioSFX.Play();
     }
@@ -147,11 +147,11 @@ public class UIController : MonoBehaviour
             case 0: //--- Head ---
                 UpdateSkinState(headSkins, headCounter, textBtnHead, 3, true);
                 break;
-            
+
             case 1: //--- Face ---
                 UpdateSkinState(faceSkins, faceCounter, textBtnFace, 2, true);
                 break;
-            
+
             case 2: //--- Body ---
                 UpdateSkinState(bodySkins, bodyCounter, textBtnBody, 5, true);
                 break;
@@ -161,20 +161,20 @@ public class UIController : MonoBehaviour
     private void UpdateSkinState(List<SCPTB_Skin> _skinList, int _counter, TextMeshProUGUI _textMesh, int _price, bool _isBuyingOrEquip = false)
     {
         Transform imageCoin = _textMesh.transform.parent.Find("ImageCoin");
-        
+
         switch (_skinList[_counter].storeState)
         {
             case StoreStates.NONE:
                 if (!_isBuyingOrEquip)
                 {
                     if (!imageCoin.gameObject.activeSelf) imageCoin.gameObject.SetActive(true);
-                    
+
                     _textMesh.text = $"x{_price}";
                     return;
                 }
-                
+
                 int currentCoins = Int32.Parse(textCoin.text.Replace("x", ""));
-                
+
                 if (currentCoins < _price) return;
 
                 textCoin.text = $"x{currentCoins - _price}";
@@ -184,7 +184,7 @@ public class UIController : MonoBehaviour
                 audioSFX.clip = coinSound;
                 audioSFX.Play();
                 break;
-            
+
             case StoreStates.PURCHASED:
                 if (!_isBuyingOrEquip)
                 {
@@ -192,7 +192,7 @@ public class UIController : MonoBehaviour
                     _textMesh.text = "Equip";
                     return;
                 }
-                
+
                 foreach (SCPTB_Skin skin in _skinList)
                 {
                     if (skin == null) continue;
@@ -201,7 +201,7 @@ public class UIController : MonoBehaviour
                 _skinList[_counter].storeState = StoreStates.EQUIPED;
                 _textMesh.text = "Unequip";
                 break;
-            
+
             case StoreStates.EQUIPED:
                 if (!_isBuyingOrEquip)
                 {
@@ -209,9 +209,9 @@ public class UIController : MonoBehaviour
                     _textMesh.text = "Unequip";
                     return;
                 }
-                
+
                 if (_skinList[_counter].name.Contains("None") || _skinList[_counter].name.Contains("SkinBody1")) return;
-                
+
                 _skinList[_counter].storeState = StoreStates.PURCHASED;
                 _textMesh.text = "Equip";
                 break;
@@ -223,7 +223,7 @@ public class UIController : MonoBehaviour
         UpdateSkinState(headSkins, headCounter, textBtnHead, 3, _isBuyingOrEquip);
 
         UpdateSkinState(faceSkins, faceCounter, textBtnFace, 2, _isBuyingOrEquip);
-        
+
         UpdateSkinState(bodySkins, bodyCounter, textBtnBody, 5, _isBuyingOrEquip);
     }
 
@@ -231,19 +231,14 @@ public class UIController : MonoBehaviour
     {
         foreach (SCPTB_Skin skin in _skinList)
         {
-            if(skin == null || skin.name.Contains("None")) continue;
+            if (skin == null || skin.name.Contains("None")) continue;
 
             if (skin.storeState != StoreStates.EQUIPED) continue;
-            
+
             if (skin.SkinMaterial != null)
             {
                 SkinnedMeshRenderer skinnedMeshRenderer = playerBody.GetComponent<SkinnedMeshRenderer>();
                 skinnedMeshRenderer.material = skin.SkinMaterial;
-                // SkinnedMeshRenderer skinnedMeshRenderer = _anchor.GetComponent<SkinnedMeshRenderer>();
-                //
-                // Material[] newMaterials = new Material[1] { skin.SkinMaterial };
-                //
-                // skinnedMeshRenderer.sharedMaterials = newMaterials;
             }
             else
             {
@@ -252,7 +247,7 @@ public class UIController : MonoBehaviour
             }
         }
     }
-    
+
     private void ClearChildrensFromList(Transform _target)
     {
         foreach (Transform child in _target)
@@ -265,7 +260,7 @@ public class UIController : MonoBehaviour
     private void GetSFXAudioSource(AudioSource _audio)
     {
         audioSFX = _audio;
-        if(audioSFX != null) SFXAudioObserver.OnPlaySFX -= GetSFXAudioSource;
+        if (audioSFX != null) SFXAudioObserver.OnPlaySFX -= GetSFXAudioSource;
     }
 
     private void GetPlayerReference(Transform _player)
@@ -274,7 +269,7 @@ public class UIController : MonoBehaviour
         if (player != null) PlayerController.OnSetPlayerReference -= GetPlayerReference;
         SetPlayerReferences();
     }
-    
+
     private void SetPlayerReferences()
     {
         playerVisuals = player.GetComponent<PlayerController>().GetVisuals();

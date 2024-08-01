@@ -14,20 +14,20 @@ public class AnimationBehaviour : MonoBehaviour
 
     private void Awake()
     {
-        if(animator == null)
+        if (animator == null)
             animator = GetComponent<Animator>();
     }
 
     public void UpdateAnimation(Enum _state, bool _freezeAnimationUpdate = false)
-    { 
+    {
         if (isFreezingAnimationUpdate) return;
-        
+
         if (_freezeAnimationUpdate)
         {
             StartCoroutine(TimerFreezingChanges());
             return;
         }
-        
+
         if (CurrentState == _state) return;
 
         CurrentState = _state;
@@ -40,13 +40,13 @@ public class AnimationBehaviour : MonoBehaviour
     public async void UpdateAnimationFreeze(Enum _state)
     {
         isFreezingAnimationUpdate = true;
-        
+
         CurrentState = _state;
 
         if (_state.GetType() == typeof(AnimationStates)) SetAnimationName((AnimationStates)_state);
 
         animator.Play(animationName);
-        
+
         await Task.Run(() =>
         {
             UnityMainThreadDispatcher.Enqueue(() =>
@@ -80,19 +80,19 @@ public class AnimationBehaviour : MonoBehaviour
                 animator.applyRootMotion = true;
                 animator.Rebind();
                 break;
-                
+
             case AnimationStates.DEATH:
                 animationName = "Death";
                 break;
-            
+
             case AnimationStates.VICTORY:
                 animationName = "Victory";
                 break;
-            
+
             case AnimationStates.BLOW_KISS:
                 animationName = "BlowKiss";
                 break;
-            
+
             case AnimationStates.SHAKE_HANDS:
                 animationName = "ShakingHands";
                 break;

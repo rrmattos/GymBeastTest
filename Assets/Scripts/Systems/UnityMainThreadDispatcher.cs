@@ -8,8 +8,8 @@ public class UnityMainThreadDispatcher : MonoBehaviour
 
     private static UnityMainThreadDispatcher instance;
 
-    private UnityMainThreadDispatcher(){}
-    
+    private UnityMainThreadDispatcher() { }
+
     private void Awake()
     {
         if (instance == null)
@@ -23,7 +23,7 @@ public class UnityMainThreadDispatcher : MonoBehaviour
         }
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         lock (executionQueue)
         {

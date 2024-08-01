@@ -40,12 +40,12 @@ public class TradeCoinController : MonoBehaviour
         {
             if (stackController == null) stackController = _other.GetComponent<StackController>();
             if (stackAnchor == null) stackAnchor = stackController.GetStackAnchor();
-            
+
             wallsParent.GetComponent<Animator>().Play("FadeIn");
-            
+
             if (isPlayerGettinPosition) return;
             if (stackAnchor != null && stackAnchor.childCount == 0) return;
-            
+
             isPlayerGettinPosition = true;
 
             StartCoroutine(TimerAdjustPlayerPosition(_other.transform, playerController));
@@ -66,13 +66,13 @@ public class TradeCoinController : MonoBehaviour
         touchController.enabled = false;
         Transform playerVisuals = _playerController.GetVisuals();
         _playerController.enabled = false;
-        
-        #if UNITY_EDITOR
+
+#if UNITY_EDITOR
         Selection.activeObject = null;
-        #endif
+#endif
 
         tradePointAnimator.enabled = false;
-        
+
         Vector3 startPos = _other.position;
         Quaternion startRot = playerVisuals.rotation;
         Vector3 endPos = tradeAnchorPoint.position;
@@ -88,10 +88,10 @@ public class TradeCoinController : MonoBehaviour
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-        
+
         _other.position = endPos;
         playerVisuals.rotation = endRot;
-        
+
         doorSecurityAnimator.Play("Clapping2");
 
         List<Transform> stackBodies = new();
@@ -99,25 +99,25 @@ public class TradeCoinController : MonoBehaviour
         {
             stackBodies.Add(body);
         }
-    
+
         foreach (Transform body in stackBodies)
         {
             elapsedTime = 0;
             startPos = body.position;
             endPos = outsideAnchor.position;
-            
+
             _playerController.GetAnimationBehaviour().UpdateAnimationFreeze(AnimationStates.IDLE);
-        
+
             stackController.RemoveFromStack(body);
             body.SetParent(null);
-        
+
             while (elapsedTime < bodySliderTime)
             {
                 body.position = Vector3.Lerp(startPos, endPos, elapsedTime / bodySliderTime);
                 elapsedTime += Time.deltaTime;
                 yield return null;
             }
-        
+
             body.position = endPos;
             LayerChanger.ChangeLayerRecursively(body.gameObject, 0);
             List<Rigidbody> rigidBodies = body.GetComponentsInChildren<Rigidbody>().Where(rb =>
@@ -131,25 +131,28 @@ public class TradeCoinController : MonoBehaviour
                 rb.isKinematic = false;
                 rb.useGravity = true;
             }
-            
+
+            totalCoins = Int32.Parse(textCoin.text.Replace("x", ""));
             audioSource.clip = coinAudio;
             audioSource.Play();
             totalCoins++;
-            textCoin.text = $"x{totalCoins.ToString()}";
-            
+            textCoin.text = $"x{totalCoins}";
+
             //Destroy(body.GetComponent<RagBoyController>());
         }
 
         _playerController.GetAnimationBehaviour().GetAnimator().applyRootMotion = true;
-        
+
         _playerController.GetAnimationBehaviour().UpdateAnimationFreeze(AnimationStates.SHAKE_HANDS);
         doorSecurityAnimator.Play("ShakingHands");
         yield return new WaitForSeconds(4);
         doorSecurityAnimator.Play("Idle");
+        doorSecurityAnimator.transform.localPosition = Vector3.zero;
+        doorSecurityAnimator.transform.localEulerAngles = Vector3.zero;
         _playerController.GetAnimationBehaviour().GetAnimator().applyRootMotion = false;
-        
+
         isPlayerGettinPosition = false;
-        
+
         touchController.enabled = true;
         _playerController.enabled = true;
         tradePointAnimator.enabled = true;
@@ -157,16 +160,16 @@ public class TradeCoinController : MonoBehaviour
 
     private void GetTextCoinReference(TextMeshProUGUI _textCoin)
     {
-        textCoin = _textCoin; 
-        if(textCoin != null) UIController.OnSetTextCoins -= GetTextCoinReference;
+        textCoin = _textCoin;
+        if (textCoin != null) UIController.OnSetTextCoins -= GetTextCoinReference;
     }
-    
+
     private void GetSFXAudioReference(AudioSource _audioSource)
     {
         audioSource = _audioSource;
-        if(_audioSource != null) SFXAudioObserver.OnPlaySFX -= GetSFXAudioReference;
+        if (_audioSource != null) SFXAudioObserver.OnPlaySFX -= GetSFXAudioReference;
     }
-    
+
     private void GetWallsReference(Transform _walls)
     {
         wallsParent = _walls;
